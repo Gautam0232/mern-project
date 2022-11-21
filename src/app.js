@@ -1,41 +1,42 @@
-const express = require("express");
-const path = require("path");
-const app = express();
-const hbs = require("hbs");
-require("./db/conn");
+const express = require("express"); // Import express
+const path = require("path");  // Import path
+const app = express();  // Invoke express function
+const hbs = require("hbs"); // Import the handle bars module
+require("./db/conn"); // Import the connection module containing mongoose connection
 
 const Register = require("./models/registers");
 const Login = require("./models/login");
 
-const port = process.env.PORT || 8000;
+const port = process.env.PORT || 3000; // Assign a port
 
-const static_path = path.join(__dirname, "../public");
-const template_path = path.join(__dirname, "../templates/views");
-const partials_path = path.join(__dirname, "../templates/partials");
+const static_path = path.join(__dirname, "../public"); // Create a static path to serve your static files
+const template_path = path.join(__dirname, "../templates/views"); // Same in the case of views and partials
+const partials_path = path.join(__dirname, "../templates/partials"); 
 
-app.use(express.json());
+app.use(express.json()); // Function to parse the JSON request
 app.use(express.urlencoded({ extended: false }));
-app.use(express.static(static_path));
+app.use(express.static(static_path)); // Function to serve the static files
 
-app.set("view engine", "hbs");
-app.set("views", template_path);
+app.set("view engine", "hbs"); // Set a view engine , in this case using handlebars (hbs)
+app.set("views", template_path); // Similarly for template path
 
-hbs.registerPartials(partials_path);
+hbs.registerPartials(partials_path); // Initialize all partials
 
 
-
+// Work on a get request
 app.get("/", (req, res) => {
-    res.render("index")
+    res.render("index") // Render the home (index) page
 });
 
 app.get("/register", (req, res) => {
-    res.render("register");
+    res.render("register"); // Render the registration page
 });
 
 app.get("/login", (req, res) => {
-    res.render("login");
+    res.render("login"); // Render the login page
 })
 
+// Listen to a particular assigned port
 app.listen(port, () => {
     console.log(`server is running at port no ${port}`);
 });
@@ -46,6 +47,7 @@ app.post("/register", async (req, res) => {
         const password = req.body.password;
         const cpassword = req.body.confirmpassword;
 
+        // Condition to match the password
         if (password === cpassword) {
             const registerEmployee = new Register({
                 firstname: req.body.firstname,
@@ -58,17 +60,22 @@ app.post("/register", async (req, res) => {
                 confirmpassword: cpassword
             })
 
+            // Save the data to the mongoose collection
             const registered = await registerEmployee.save();
 
+            // Go back to the index page
             res.status(201).render("index");
         } else {
+            // Error if passwords not matching
             res.send("passwords are not matching");
         }
     } catch (error) {
+        // Return an error
         res.status(400).send(error);
     }
 });
 
+// Handle the login request
 app.post("/login", async (req, res) => {
 
     try {
